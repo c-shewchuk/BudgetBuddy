@@ -1,8 +1,16 @@
-const lib = require('lib');
 const http = require('http');
 const express = require('express');
 const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const bodyParser = require('body-parser');
+
+// INIT THE MONGOOSE DB
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://localhost:27017/test', {useNewUrlParser: true});
+var db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+	console.log("Connnected to Mongoose DB"); 
+});
 
 /*
 * Inititalize the express framework and create the server to recieve the 
@@ -34,20 +42,24 @@ app.post('/sms', (req, res) => {
   if (command == 'helpme'){
       string = help();
   }
+
   if(command == 'create'){
-    createAccount(phone);
-    string = `Account created for ${phoneNumber}`;
+    createAccount(phoneNumber);
   }
+
   if (command == 'log'){
-    string = log(category, amount);
+    string = log(phoneNumber, category, amount);
+    string = 'LOG BABY';
   }
 
   if (command == 'report'){
-    string = report(category, amount);
+    string = report(phoneNumber, category, amount);
+    string = 'REPORT';
   }
 
   if(command == 'set'){
-    string = set(category, amount);
+    string = set(phoneNumber, category, amount);
+    string = 'SET THE WORLD';
   }
 
   
@@ -57,12 +69,63 @@ app.post('/sms', (req, res) => {
   res.end(twiml.toString());
 });
 
-http.createServer(app).listen(1337, () => {
-  console.log('Express server listening on port 1337');
-});
 
-function createAccount(phone_number = 25){
-  console.log(`Account created for ${phone_number}`);
+function createAccount(phoneNumber = 25){
+  createUser(phoneNumber);
+  console.log(`Account created for ${phoneNumber}`);
+}
+
+function set(phoneNumber, category, amount){
+  if (category == 'food'){
+    updateUserFoodBudget(phoneNumber, amount);
+  }
+  if (category == 'entertainment'){
+    updateUserEntertainBudget(phoneNumber, amount);
+  }
+
+  if (category == 'clothing'){
+    updateUserClothingBudget(phoneNumber, amount);
+  }
+  if (category == 'other'){
+    updateUserOtherBudget(phoneNumber, amount);
+  }
+}
+
+function report(phoneNumber, category, amount){
+  user = lookupUser(phoneNumber);
+
+}
+
+async function log(phoneNumber, category, amount){
+  var newVal = 0;
+  if (category == 'food'){
+    lookupFoodExpenditure(phoneNumber).then(function(result){
+    updateUserFoodExpend(phoneNumber, result + newVal); 
+    })
+    .catch(function(error){
+      throw error;
+    });
+    console.log(oldVal);
+    console.log(amount);
+    newVal = oldVal + amount;
+    updateUserFoodExpend(phoneNumber, newVal);
+    console.log(newVal);
+    
+  }
+
+  if (category == 'entertainment'){
+    oldVal = lookupEntertainExpenditure(phoneNumber);
+    updateUserEntertainExpend(phoneNumber, amount + oldVal);
+  }
+
+  if (category == 'clothing'){
+    oldVal = lookupClothingExpenditure(phoneNumber);
+    updateUserClothingExpend(phoneNumber, oldVal + amount);
+  }
+  if (category == 'other'){
+    oldVal = lookupOtherExpenditure(phoneNumber);
+    updateUserOtherExpend(phoneNumber, oldVal + amount);
+  }
 }
 
 
@@ -70,18 +133,6 @@ function createAccount(phone_number = 25){
 * Functions to interact with the database and update the tables
 */
 
-
-function addFood(){ 
-  return null;
-} 
-
-function add_clothes(){
-
-}
-
-function add_entertainment(){
-
-}
 
 
 function help(){
@@ -95,5 +146,180 @@ function help(){
   return string;
 }
 
+var budgetSchema = new mongoose.Schema({
+	phoneNo: String, 
+	foodb: Number, 
+	foode: Number, 
+	entertainb: Number, 
+	entertaine: Number, 
+	clothingb: Number, 
+	clothinge: Number,
+	otherb: Number,
+	othere: Number
+});
+var userBudget = mongoose.model('UserBudget', budgetSchema); 
+
+function createUser(phoneNo){
+	var userOne = new userBudget ({
+	phoneNo: phoneNo, 
+	foodb: 0, 
+	foode: 0,
+	entertainb: 0, 
+	entertaine: 0,
+	clothingb: 0, 
+	clothinge: 0,
+	otherb: 0,
+	othere: 0		
+	}); 
+	
+	userOne.save(function(err,userBudget){ 
+	if(err) return console.error(err); 
+	console.log('User Saved'); 
+	}); 
+}; 
+
+function lookupUser(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('UserData \n',user);
+	}); 
+}; 
+
+// GET VALUE FUNCTIONS /////////////////////////////////////////
+
+function lookupFoodBudget(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].foodb ; 
+	console.log('User Food Budget',thing); 
+	return thing ; 
+	}); 
+}; 
+
+async function lookupFoodExpenditure(userNo){
+	userBudget.find({phoneNo: userNo}, {_id: 0, foode:1}), function (err, user) {
+  console.log(user[0].foode);
+    if (err) {
+      console.error(err);
+    }
+    else{
+      return user[0];
+    } 
+	//console.log('User Food Expenditure',thing); 
+ 
+	}; 
+}; 
+
+function lookupEntertainBudget(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].entertainb ; 
+	console.log('User Entertain Budget',thing); 
+	return thing ; 
+	}); 
+}; 
+
+function lookupEntertainExpenditure(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].entertaine ; 
+	console.log('User Entertain Expenditure',thing); 
+	return thing ; 
+	}); 
+}; 
+
+function lookupClothingBudget(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].clothingb ; 
+	console.log('User Clothing Budget',thing); 
+	return thing ; 
+	}); 
+}; 
+
+function lookupClothingExpenditure(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].clothinge ; 
+	console.log('User Clothing Expenditure',thing); 
+	return thing ; 
+	}); 
+}; 
+
+function lookupOtherBudget(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].otherb ; 
+	console.log('User other Budget',thing); 
+	return thing ; 
+	}); 
+}; 
+
+function lookupOtherExpenditure(userNo){
+	userBudget.find({phoneNo: userNo},function (err, user) {
+	if (err) return console.error(err);
+	console.log('In Query,',user);
+	var thing = user[0].othere ; 
+	console.log('User other Expenditure',thing); 
+	return thing ; 
+	}); 
+}; 
+
+// MODIFY FUNCTIONS ////////////////////////////////////////////////////
+
+function updateUserFoodExpend(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {foode:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserFoodBudget(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {foodb:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserEntertainExpend(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {entertaine:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserEntertainBudget(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {entertainb:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserClothingExpend(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {clothinge:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserClothingBudget(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {clothingb:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+
+function updateUserOtherExpend(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {othere:amt}}, () => {
+		console.log("worked");
+	})
+}
+
+function updateUserOtherBudget(userNo, amt){
+	userBudget.updateOne({phoneNo: userNo}, {$set: {otherb:amt}}, () => {
+		console.log("worked");
+	})
+}
 
 
