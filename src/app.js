@@ -1,12 +1,10 @@
 const express =  require('express');
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
 const bodyParser = require('body-parser');
 const http = require('http');
-const db = require('./db');
+
 
 const app = express();
 const smsController = require('./sms-controller');
-
 
 
 // Set up parsing configurations 
