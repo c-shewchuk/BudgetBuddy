@@ -1,26 +1,34 @@
-const express =  require('express');
+const express = require('express');
+const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const http = require('http');
-const MessagingResponse = require('twilio').twiml.MessagingResponse;
+const path = require('path');
+
 
 const app = express();
-const smsController = require('./sms-controller');
 
-
-// Set up parsing configurations 
-app.use(bodyParser.urlencoded({ extended: false}));
+// Initialize middlewares/route folders
 app.use(bodyParser.json());
 
-http.createServer(app).listen(1337, () => {
-    console.log('Express server listening on port 1337');
-});
+// DB config
+const db = require('./config/keys').mongoURI;
 
-//Set up server to listen for POST requests and allow response for text messages
+//Connect to MongoDB
+mongoose.connect(db, {useNewUrlParser: true, useUnifiedTopology: true})
+    .then(() => console.log('MongoDB connected...'))
+    .catch(err => console.log(err));
 
-app.post('/sms', (req, res) => {
-    var stringMessage = smsController.parse(req, res);
-    var twiml = new MessagingResponse();
-    twiml.message(stringMessage);
-    res.writeHead(200, {'Content-Type': 'text/xml'});
-    res.end(twiml.toString());
+//Server static assets if in production
+if(process.env.NODE_ENV === 'production'){
+    // Set static folder
+    app.use(express.static('client/build'));
+
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname, 'client', 'build', 'index.html'));
+    });
+}
+
+const port = process.env.PORT || 5000;
+
+app.listen(port, () => {
+    console.log(`Server started on port ${port}`);
 });
