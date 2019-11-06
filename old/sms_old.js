@@ -157,6 +157,7 @@ var budgetSchema = new mongoose.Schema({
 	otherb: Number,
 	othere: Number
 });
+
 var userBudget = mongoose.model('UserBudget', budgetSchema); 
 
 function createUser(phoneNo){

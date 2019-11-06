@@ -3,11 +3,14 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const path = require('path');
 
+const sms =  require('./routes/sms/sms');
 
 const app = express();
 
 // Initialize middlewares/route folders
+app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+app.use('/sms', sms);
 
 // DB config
 const db = require('./config/keys').mongoURI;
@@ -32,3 +35,4 @@ const port = process.env.PORT || 5000;
 app.listen(port, () => {
     console.log(`Server started on port ${port}`);
 });
+
