@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
-const Schema = mongoose.Schema;
 
-const BudgetSchema = new Schema({
+const BudgetSchema = new mongoose.Schema({
 	phoneNo: String, 
 	foodSpent: Number, 
 	foodBudget: Number, 

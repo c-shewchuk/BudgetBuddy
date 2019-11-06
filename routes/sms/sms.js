@@ -31,7 +31,7 @@ router.post('/', (req, res) => {
     }
   
     if (command === 'log'){
-      string = log(phoneNumber, category, amount);
+      string = smsHandler.logItem(phoneNumber, category, amount);
       string = 'LOG BABY';
     }
   
