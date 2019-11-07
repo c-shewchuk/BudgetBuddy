@@ -62,7 +62,19 @@ const report = (phoneNumber, category, amount) => {
 }
 
 const setBudget = (phoneNumber, category, amount) => {
-
+    switch (category){
+        case 'food' :
+            await setFoodBudget(phoneNumber, amount);
+            return;
+        case 'clothing':
+            await setClothingBudget(phoneNumber, amount);
+            return;
+        case 'entertainment':
+            await setEnterainmentBudget(phoneNumber, amount);
+            return;
+        default:
+            console.log(`${category} is not a vaild category`);
+    }
 };
 
 
@@ -83,7 +95,7 @@ const updateFoodSpent = async (phoneNumber, amount, callback) => {
                 foundBudget.foodSpent = amountFloat;
 
                 foundBudget.save()
-                  .then(console.log('Updated Food Budget'))
+                  .then(console.log('Updated Food Spent'))
                   .catch(err => console.log(err));
             }
         }
@@ -107,7 +119,7 @@ const updateClothingSpent = async  (phoneNumber, amount, callback) => {
                 foundBudget.clothingSpent = amountFloat;
 
                 foundBudget.save()
-                  .then(console.log('Updated Clothing Budget'))
+                  .then(console.log('Updated Clothing Spent'))
                   .catch(err => console.log(err));
             }
         }
@@ -132,6 +144,68 @@ const updateEnterainmentSpent = async (phoneNumber, amount, callback) => {
 
                 foundBudget.save()
                   .then(console.log('Updated Entertainment Budget'))
+                  .catch(err => console.log(err));
+            }
+        }
+    });
+}
+
+const setEnterainmentBudget = async (phoneNumber, amount, callback) => {
+    Budget.findOne({phoneNo: phoneNumber}, (err, foundBudget) => {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        else {
+            if(!foundBudget){
+                console.log('Budget not found');
+            }
+            else{
+                foundBudget.entertainBudget = parseFloat(amount);
+                foundBudget.save()
+                  .then(console.log('Updated Entertainment Budget'))
+                  .catch(err => console.log(err));
+            }
+        }
+    });
+}
+
+const setFoodBudget = async (phoneNumber, amount, callback) => {
+    Budget.findOne({phoneNo: phoneNumber}, (err, foundBudget) => {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        else {
+            if(!foundBudget){
+                console.log('Budget not found');
+            }
+            else{
+                foundBudget.foodBudget = parseFloat(amount);
+
+                foundBudget.save()
+                  .then(console.log('Updated Food Budget'))
+                  .catch(err => console.log(err));
+            }
+        }
+    });
+}
+
+const setClothingBudget = async (phoneNumber, amount, callback) => {
+    Budget.findOne({phoneNo: phoneNumber}, (err, foundBudget) => {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        else {
+            if(!foundBudget){
+                console.log('Budget not found');
+            }
+            else{
+                foundBudget.clothingSpent = parseFloat(amount);
+
+                foundBudget.save()
+                  .then(console.log('UpdatedC Clothing Budget'))
                   .catch(err => console.log(err));
             }
         }
