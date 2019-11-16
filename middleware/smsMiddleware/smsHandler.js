@@ -57,9 +57,47 @@ const logItem = async (phoneNumber, category, amount) => {
  
 }
 
-const report = (phoneNumber, category, amount) => {
+const report = (phoneNumber, category) => {
+    // Right now, generate report of total spending, should include ability to see a list of all purchases for a certain category,
+    let responseString = "Monthly Spending\r";
 
+    Budget.findOne({phoneNo: phoneNumber}, (err, foundBudget) => {
+        if(err) {
+            console.log(err);
+            return;
+        }
+        else {
+            if(!foundBudget){
+                console.log('Budget not found');
+            }
+            else{
+                responseString += "Total Food Spent: " + foundBudget.foodSpent + "\r";
+                responseString += "Total Food Budget: " + foundBudget.foodBudget + "\r";
+                responseString += "Total Entertainment Spent: " + foundBudget.entertainSpent + "\r";
+                responseString += "Total Entertainment Budget: " + foundBudget.entertainBudget + "\r";
+                responseString += "Total Clothing Spent: " + foundBudget.clothingSpent + "\r";
+                responseString += "Total Clothing Budget: " + foundBudget.clothingBudget + "\r";
+                responseString += "Total Other Spent: " + foundBudget.otherSpent + "\r";
+                responseString += "Total Other Budget: " + foundBudget.otherBudget + "\r";
+                responseString += "Total Money Spent: " +  (
+                    parseFloat(foundBudget.foodSpent) 
+                    + parseFloat(foundBudget.entertainSpent)
+                    + parseFloat(foundBudget.clothingSpent)
+                    + parseFloat(foundBudget.otherSpent) 
+                    ) +  "\r";
+                responseString += "Total Budget: " +  (
+                    parseFloat(foundBudget.foodSpent) 
+                    + parseFloat(foundBudget.entertainSpent)
+                    + parseFloat(foundBudget.clothingSpent)
+                    + parseFloat(foundBudget.otherSpent) 
+                    )  + "\r";
+                return responseString;
+            }
+        }
+    });
 }
+
+
 
 const setBudget = (phoneNumber, category, amount) => {
     switch (category){
@@ -75,7 +113,7 @@ const setBudget = (phoneNumber, category, amount) => {
         default:
             console.log(`${category} is not a vaild category`);
     }
-};
+}
 
 
 const updateFoodSpent = async (phoneNumber, amount, callback) => {

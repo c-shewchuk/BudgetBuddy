@@ -36,12 +36,11 @@ router.post('/', (req, res) => {
     }
   
     if (command === 'report'){
-      string = report(phoneNumber, category, amount);
-      string = 'REPORT';
+      string = smsHandler.report(phoneNumber, category, amount);
     }
   
     if(command === 'set'){
-      string = set(phoneNumber, category, amount);
+      string = smsHandler.set(phoneNumber, category, amount);
       string = 'SET THE WORLD';
     }
   
